@@ -1,11 +1,15 @@
+import bodyParser from 'body-parser'
 import express from 'express'
 // import {OpenApiValidator} from 'express-openapi-validator' // if version 3.*
 import * as OpenApiValidator from 'express-openapi-validator'
 import {Express} from 'express-serve-static-core'
+import morgan from 'morgan'
+import morganBody from 'morgan-body'
 import {connector, summarise} from 'swagger-routes-express'
 import YAML from 'yamljs'
  
 import * as api from '@kottab/api/controllers'
+import { expressDevLogger } from '@kottab/utils/express_dev_logger'
  
 export async function createServer(): Promise<Express> {
   const yamlSpecFile = './config/openapi.yml'
@@ -14,8 +18,16 @@ export async function createServer(): Promise<Express> {
   console.info(apiSummary)
  
   const server = express()
+
   // here we can intialize body/cookies parsers, connect logger, for example morgan
- 
+  server.use(bodyParser.json())
+  
+  server.use(morgan(':method :url :status :response-time ms - :res[content-length]'))
+  
+  morganBody(server)
+
+  server.use(expressDevLogger)
+
   // setup API validator
   const validatorOptions = {
     coerceTypes: true,
