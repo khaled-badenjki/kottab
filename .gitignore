@@ -39,3 +39,6 @@ bin/**/*
 
 # ignore yarn.lock
 yarn.lock
+
+# ignore prod env vars
+config/.env.prod

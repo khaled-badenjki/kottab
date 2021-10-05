@@ -9,24 +9,32 @@ import {connector, summarise} from 'swagger-routes-express'
 import YAML from 'yamljs'
  
 import * as api from '@kottab/api/controllers'
+import config from '@kottab/config'
+import logger from '@kottab/utils/logger'
 import { expressDevLogger } from '@kottab/utils/express_dev_logger'
  
 export async function createServer(): Promise<Express> {
   const yamlSpecFile = './config/openapi.yml'
   const apiDefinition = YAML.load(yamlSpecFile)
   const apiSummary = summarise(apiDefinition)
-  console.info(apiSummary)
+  logger.info(apiSummary)
  
   const server = express()
 
   // here we can intialize body/cookies parsers, connect logger, for example morgan
   server.use(bodyParser.json())
   
-  server.use(morgan(':method :url :status :response-time ms - :res[content-length]'))
+  if (config.morganLogger) {
+    server.use(morgan(':method :url :status :response-time ms - :res[content-length]'))
+  }
   
-  morganBody(server)
+  if (config.morganBodyLogger) {
+    morganBody(server)
+  }
 
-  server.use(expressDevLogger)
+  if (config.exmplDevLogger) {
+    server.use(expressDevLogger)
+  }
 
   // setup API validator
   const validatorOptions = {
@@ -52,7 +60,7 @@ export async function createServer(): Promise<Express> {
   const connect = connector(api, apiDefinition, {
     onCreateRoute: (method: string, descriptor: any[]) => {
       descriptor.shift()
-      console.log(`${method}: ${descriptor.map((d: any) => d.name).join(', ')}`)
+      logger.verbose(`${method}: ${descriptor.map((d: any) => d.name).join(', ')}`)
     },
     security: {
       bearerAuth: api.auth
