@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import winston from 'winston'
 
 import config from '@kottab/config'
