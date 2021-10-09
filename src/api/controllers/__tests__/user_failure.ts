@@ -6,6 +6,8 @@ import UserService from '@kottab/api/services/user'
 import {createServer} from '@kottab/utils/server'
 
 jest.mock('@kottab/api/services/user')
+UserService.auth = jest.fn()
+UserService.createUser = jest.fn()
 
 let server: Express
 beforeAll(async () => {

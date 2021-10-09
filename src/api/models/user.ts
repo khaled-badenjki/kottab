@@ -1,5 +1,4 @@
 import bcrypt from 'bcrypt'
-import { date } from 'faker/locale/de_CH'
 import {Schema, Document, model, Model} from 'mongoose'
 
 import validator from 'validator'
