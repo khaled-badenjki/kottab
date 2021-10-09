@@ -5,4 +5,7 @@ module.exports = {
   moduleNameMapper: {
     "@kottab/(.*)": "<rootDir>/src/$1"
   },
+  testPathIgnorePatterns: [
+    "<rootDir>/bin"
+  ]
 };

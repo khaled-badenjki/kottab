@@ -4,6 +4,7 @@ import request from 'supertest'
 import {Express} from 'express-serve-static-core'
 
 import db from '@kottab/utils/db'
+import {createDummy} from '@kottab/tests/user'
 import {createServer} from '@kottab/utils/server'
 
 let server: Express
@@ -72,6 +73,80 @@ describe('POST /api/v1/user', () => {
         mail: faker.internet.email(),
         password: faker.internet.password(),
         name: faker.name.firstName()
+      })
+      .expect(400)
+      .end(function(err, res) {
+        if (err) return done(err)
+        expect(res.body).toMatchObject({
+          error: {type: 'request_validation', message: expect.stringMatching(/email/)}
+        })
+        done()
+      })
+  })
+})
+
+describe('POST /api/v1/login', () => {
+  it('should return 200 & valid response for a valid login request', done => {
+    createDummy().then(dummy => {
+      request(server)
+      .post(`/api/v1/login`)
+      .send({
+        email: dummy.email,
+        password: dummy.password
+      })
+      .expect(200)
+      .end(function(err, res) {
+        if (err) return done(err)
+        expect(res.header['x-expires-after']).toMatch(/^(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))$/)
+        expect(res.body).toEqual({
+          userId: expect.stringMatching(/^[a-f0-9]{24}$/),
+          token: expect.stringMatching(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/)
+        })
+        done()
+      })
+    })    
+  })
+
+  it('should return 404 & valid response for a non-existing user', done => {
+    request(server)
+      .post(`/api/v1/login`)
+      .send({
+        email: faker.internet.email(),
+        password: faker.internet.password()
+      })
+      .expect(404)
+      .end(function(err, res) {
+        if (err) return done(err)
+        expect(res.body).toEqual({
+          error: {type: 'invalid_credentials', message: 'Invalid Login/Password'}
+        })
+        done()
+      })
+  })
+
+  it('should return 400 & valid response for invalid email format', done => {
+    request(server)
+      .post(`/api/v1/login`)
+      .send({
+        email: faker.internet.password(),
+        password: faker.internet.password()
+      })
+      .expect(400)
+      .end(function(err, res) {
+        if (err) return done(err)
+        expect(res.body).toMatchObject({
+          error: {type: 'request_validation', message: expect.stringMatching(/email/)}
+        })
+        done()
+      })
+  })
+
+  it('should return 400 & valid response for invalid key', done => {
+    request(server)
+      .post(`/api/v1/login`)
+      .send({
+        mail: faker.internet.email(),
+        password: faker.internet.password()
       })
       .expect(400)
       .end(function(err, res) {

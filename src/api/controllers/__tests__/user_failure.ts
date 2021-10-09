@@ -6,8 +6,10 @@ import UserService from '@kottab/api/services/user'
 import {createServer} from '@kottab/utils/server'
 
 jest.mock('@kottab/api/services/user')
-UserService.auth = jest.fn()
-UserService.createUser = jest.fn()
+// I added the next two lines to pass tests in bin directory (js tests, not ts)
+// Then I updated jest config to run only ts tests, and they become unnecessary
+// UserService.auth = jest.fn()
+// UserService.createUser = jest.fn()
 
 let server: Express
 beforeAll(async () => {
@@ -38,6 +40,24 @@ describe('createUser failure', () => {
         email: faker.internet.email(),
         password: faker.internet.password(),
         name: faker.name.firstName()
+      })
+      .expect(500)
+      .end(function(err, res) {
+        if (err) return done(err)
+        expect(res.body).toMatchObject({error: {type: 'internal_server_error', message: 'Internal Server Error'}})
+        done()
+      })
+  })
+})
+
+describe('login failure', () => {
+  it('should return 500 & valid response if auth rejects with an error', done => {
+    (UserService.login as jest.Mock).mockResolvedValue({error: {type: 'unkonwn'}})
+    request(server)
+      .post(`/api/v1/login`)
+      .send({
+        email: faker.internet.email(),
+        password: faker.internet.password()
       })
       .expect(500)
       .end(function(err, res) {

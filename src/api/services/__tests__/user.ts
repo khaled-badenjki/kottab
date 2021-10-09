@@ -81,4 +81,17 @@ describe('createUser', () => {
 
     await expect(user.createUser('em@em.c', password, name)).rejects.toThrowError('validation failed')
   })
+
+  it('auth perfromance test', async () => {
+    const dummy = await createDummyAndAuthorize()
+  
+    const now = new Date().getTime()
+    let i = 0
+    do {
+      i += 1
+      await user.auth(`Bearer ${dummy.token!}`)
+    } while (new Date().getTime() - now < 1000)
+    
+    console.log(`auth perfromance test: ${i}`)
+  })
 })
