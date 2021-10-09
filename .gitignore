@@ -42,3 +42,6 @@ yarn.lock
 
 # ignore prod env vars
 config/.env.prod
+
+# ignore jwt private key
+config/jwt/private.pem
