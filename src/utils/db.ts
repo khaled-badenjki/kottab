@@ -53,7 +53,9 @@ class MongoConnection {
         logger.error(`Mongo:  ${String(err)}`)
         if (err.name === "MongoNetworkError") {
           setTimeout(function() {
-            mongoose.connect(config.mongo.url, opts).catch(() => { })
+            mongoose.connect(config.mongo.url, opts).catch(() => {
+              logger.error('Mongo: Network error')
+            })
           }, 5000)
         }
       })

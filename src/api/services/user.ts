@@ -1,9 +1,10 @@
 import fs from 'fs'
 import jwt, {SignOptions, VerifyErrors, VerifyOptions} from 'jsonwebtoken'
 
-import User from '@kottab/api/models/user'
+import User, {IUser} from '@kottab/api/models/user'
 import config from '@kottab/config'
 import logger from '@kottab/utils/logger'
+import cacheLocal from '@kottab/utils/cache_local'
 
 export type ErrorResponse = {error: {type: string, message: string}}
 export type AuthResponse = ErrorResponse | {userId: string}
@@ -43,9 +44,15 @@ function createAuthToken(userId: string): Promise<{token: string, expireAt: Date
 
 async function login(login: string, password: string): Promise<LoginUserResponse> {
   try {
-    const user = await User.findOne({email: login})
+    let user: IUser | undefined | null = cacheLocal.get<IUser>(login)
     if (!user) {
-      return {error: {type: 'invalid_credentials', message: 'Invalid Login/Password'}}
+      user = await User.findOne({email: login})
+      if (!user) {
+        return {error: {type: 'invalid_credentials', message: 'Invalid Login/Password'}}
+      }
+
+      cacheLocal.set(user._id.toString(), user)
+      cacheLocal.set(login, user)
     }
 
     const passwordMatch = await user.comparePassword(password)

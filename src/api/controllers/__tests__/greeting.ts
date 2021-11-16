@@ -50,7 +50,7 @@ describe('GET /hello', () => {
         if (err) return done(err)
         expect(res.body).toMatchObject({'error': {
           type: 'request_validation', 
-          message: expect.stringMatching(/Empty.*\'name\'/), 
+          message: expect.stringMatching(/Empty.*'name'/), 
           errors: expect.anything()
         }})
         done()
@@ -101,5 +101,32 @@ describe('GET /goodbye', () => {
         }})
         done()
       })
+  })
+
+  async function sendGoodbye(token: string) {
+    return new Promise<void>(function(resolve, reject) {
+      request(server)
+      .get(`/api/v1/goodbye`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .end(function(err, res) {
+        if (err) return reject(err)
+        resolve()
+      })
+    })
+  }
+  
+  it('goodbye perfromance test', async () => {
+    const dummy = await createDummyAndAuthorize()
+  
+    const now = new Date().getTime()
+    let i = 0
+    do {
+      i += 1
+      await sendGoodbye(dummy.token)
+    } while (new Date().getTime() - now < 1000)
+  
+    console.log(`goodbye perfromance test: ${i}`)
   })
 })

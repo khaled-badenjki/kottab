@@ -30,6 +30,7 @@ interface Config {
   exmplDevLogger: boolean
   // delare loggerLevel config property
   loggerLevel: LogLevel 
+  localCacheTtl: number
 }
 
 const config: Config = {
@@ -45,7 +46,8 @@ const config: Config = {
   morganBodyLogger: parsedEnv.MORGAN_BODY_LOGGER as boolean,
   exmplDevLogger: parsedEnv.EXMPL_DEV_LOGGER as boolean,
   // read the value from environment variable
-  loggerLevel: parsedEnv.LOGGER_LEVEL as LogLevel
+  loggerLevel: parsedEnv.LOGGER_LEVEL as LogLevel,
+  localCacheTtl: parsedEnv.LOCAL_CACHE_TTL as number
 }
 
 export default config

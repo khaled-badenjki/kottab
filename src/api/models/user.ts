@@ -64,9 +64,7 @@ userSchema.methods.comparePassword = function(candidatePassword: string): Promis
   })
 }
 
-export interface IUserModel extends Model<IUser> {
-  // collection/docouments level operations (fetch one or many, update, save back to db)
-}
+export type IUserModel = Model<IUser>
 
 export const User: IUserModel = model<IUser, IUserModel>('User', userSchema)
 
